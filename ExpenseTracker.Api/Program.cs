@@ -29,8 +29,6 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.UseHttpsRedirection();
-
 app.MapGet("/api/expenses", (ExpenseService expenseService) =>
 {
     return expenseService.GetExpenses();
