@@ -3,7 +3,7 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Render provides the PORT environment variable.
+// Render provides the PORT environment variable
 var port = Environment.GetEnvironmentVariable("PORT");
 
 if (!string.IsNullOrEmpty(port))
@@ -40,7 +40,7 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// CORS middleware
+// Enable CORS
 app.UseCors("ReactApp");
 
 // OpenAPI / Scalar only in development
@@ -50,29 +50,25 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-// Get all expenses
+// GET all expenses
 app.MapGet("/api/expenses", (ExpenseService expenseService) =>
 {
     return expenseService.GetExpenses();
 });
 
-// Add expense
+// POST - add expense
 app.MapPost("/api/expenses", (
-    CreateExpenseRequest request,
+    Expense expense,
     ExpenseService expenseService) =>
 {
-    var expense = expenseService.AddExpense(
-        request.Description,
-        request.Amount,
-        request.Category
-    );
+    expenseService.AddExpense(expense);
 
-    return Results.Created($"/api/expenses/{expense.Id}", expense);
+    return Results.Created("/api/expenses", expense);
 });
 
-// Update expense
-app.MapPut("/api/expenses/{id}", (
-    int id,
+// PUT - update expense
+app.MapPut("/api/expenses/{id:guid}", (
+    Guid id,
     UpdateExpenseRequest request,
     ExpenseService expenseService) =>
 {
@@ -91,9 +87,9 @@ app.MapPut("/api/expenses/{id}", (
     return Results.Ok(updatedExpense);
 });
 
-// Delete expense
-app.MapDelete("/api/expenses/{id}", (
-    int id,
+// DELETE - delete expense
+app.MapDelete("/api/expenses/{id:guid}", (
+    Guid id,
     ExpenseService expenseService) =>
 {
     var deleted = expenseService.DeleteExpense(id);
