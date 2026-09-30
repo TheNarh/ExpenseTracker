@@ -61,9 +61,16 @@ app.MapPost("/api/expenses", (
     Expense expense,
     ExpenseService expenseService) =>
 {
-    expenseService.AddExpense(expense);
+    var createdExpense = expenseService.AddExpense(
+        expense.Description,
+        expense.Amount,
+        expense.Category
+    );
 
-    return Results.Created("/api/expenses", expense);
+    return Results.Created(
+        $"/api/expenses/{createdExpense.Id}",
+        createdExpense
+    );
 });
 
 // PUT - update expense
