@@ -3,71 +3,100 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Render provides the PORT environment variable.
+var port = Environment.GetEnvironmentVariable("PORT");
+
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactApp", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrEmpty(origin))
+                    return false;
+
+                var uri = new Uri(origin);
+
+                return uri.Host.EndsWith(".vercel.app");
+            })
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
 
+// Dependency Injection
 builder.Services.AddSingleton<IExpenseRepository, InMemoryExpenseRepository>();
 builder.Services.AddSingleton<ExpenseService>();
 
+// OpenAPI
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// CORS middleware
 app.UseCors("ReactApp");
 
+// OpenAPI / Scalar only in development
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
+// Get all expenses
 app.MapGet("/api/expenses", (ExpenseService expenseService) =>
 {
     return expenseService.GetExpenses();
 });
 
-app.MapPost("/api/expenses", (AddExpenseRequest request, ExpenseService expenseService) =>
+// Add expense
+app.MapPost("/api/expenses", (
+    CreateExpenseRequest request,
+    ExpenseService expenseService) =>
 {
-    expenseService.AddExpense(
+    var expense = expenseService.AddExpense(
         request.Description,
         request.Amount,
         request.Category
     );
 
-    return Results.Ok();
+    return Results.Created($"/api/expenses/{expense.Id}", expense);
 });
 
-app.MapPut("/api/expenses/{id:guid}", (
-    Guid id,
+// Update expense
+app.MapPut("/api/expenses/{id}", (
+    int id,
     UpdateExpenseRequest request,
     ExpenseService expenseService) =>
 {
-    bool updated = expenseService.UpdateExpense(
+    var updatedExpense = expenseService.UpdateExpense(
         id,
         request.Description,
         request.Amount,
         request.Category
     );
 
-    if (!updated)
+    if (updatedExpense == null)
     {
         return Results.NotFound();
     }
 
-    return Results.NoContent();
+    return Results.Ok(updatedExpense);
 });
 
-app.MapDelete("/api/expenses/{id:guid}", (Guid id, ExpenseService expenseService) =>
+// Delete expense
+app.MapDelete("/api/expenses/{id}", (
+    int id,
+    ExpenseService expenseService) =>
 {
-    bool deleted = expenseService.DeleteExpense(id);
+    var deleted = expenseService.DeleteExpense(id);
 
     if (!deleted)
     {
