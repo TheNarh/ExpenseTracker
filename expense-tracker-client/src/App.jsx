@@ -1,19 +1,17 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
+const API_URL = "https://expense-tracker-api-shz5.onrender.com";
+
 function App() {
   const [expenses, setExpenses] = useState([]);
-
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
-
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
-
   const [editingId, setEditingId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
@@ -55,7 +53,7 @@ function App() {
   }, []);
 
   function loadExpenses() {
-    fetch("http://localhost:5125/api/expenses")
+    fetch(`${API_URL}/api/expenses`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to load expenses");
@@ -77,7 +75,6 @@ function App() {
   // Add or update expense
   function handleSubmit(event) {
     event.preventDefault();
-
     setFormError("");
 
     if (!description.trim()) {
@@ -102,8 +99,8 @@ function App() {
     };
 
     const url = editingId
-      ? `http://localhost:5125/api/expenses/${editingId}`
-      : "http://localhost:5125/api/expenses";
+      ? `${API_URL}/api/expenses/${editingId}`
+      : `${API_URL}/api/expenses`;
 
     const method = editingId ? "PUT" : "POST";
 
@@ -121,12 +118,11 @@ function App() {
           );
         }
 
-        return fetch("http://localhost:5125/api/expenses");
+        return fetch(`${API_URL}/api/expenses`);
       })
       .then((response) => response.json())
       .then((data) => {
         setExpenses(data);
-
         setDescription("");
         setAmount("");
         setCategory("");
@@ -167,7 +163,7 @@ function App() {
 
   // Confirm and delete expense
   function confirmDelete() {
-    fetch(`http://localhost:5125/api/expenses/${deleteId}`, {
+    fetch(`${API_URL}/api/expenses/${deleteId}`, {
       method: "DELETE",
     })
       .then((response) => {
@@ -175,7 +171,7 @@ function App() {
           throw new Error("Failed to delete expense");
         }
 
-        return fetch("http://localhost:5125/api/expenses");
+        return fetch(`${API_URL}/api/expenses`);
       })
       .then((response) => response.json())
       .then((data) => {
@@ -198,14 +194,12 @@ function App() {
 
           <div>
             <h1>Expense Tracker</h1>
-
             <p>Personal financial management</p>
           </div>
         </div>
 
         <div className="header-status">
           <span className="status-dot"></span>
-
           <span>Secure Dashboard</span>
         </div>
       </header>
@@ -272,7 +266,6 @@ function App() {
           <div className="card-header">
             <div>
               <p className="eyebrow">SPENDING ANALYSIS</p>
-
               <h2>Spending by Category</h2>
             </div>
           </div>
@@ -365,19 +358,12 @@ function App() {
                   required
                 >
                   <option value="">Select category</option>
-
                   <option value="Food">Food</option>
-
                   <option value="Transport">Transport</option>
-
                   <option value="Shopping">Shopping</option>
-
                   <option value="Bills">Bills</option>
-
                   <option value="Entertainment">Entertainment</option>
-
                   <option value="Health">Health</option>
-
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -410,7 +396,6 @@ function App() {
             <div className="card-header">
               <div>
                 <p className="eyebrow">ACTIVITY</p>
-
                 <h2>Recent Expenses</h2>
               </div>
 
@@ -431,19 +416,12 @@ function App() {
                 onChange={(event) => setCategoryFilter(event.target.value)}
               >
                 <option value="All">All Categories</option>
-
                 <option value="Food">Food</option>
-
                 <option value="Transport">Transport</option>
-
                 <option value="Shopping">Shopping</option>
-
                 <option value="Bills">Bills</option>
-
                 <option value="Entertainment">Entertainment</option>
-
                 <option value="Health">Health</option>
-
                 <option value="Other">Other</option>
               </select>
             </div>
