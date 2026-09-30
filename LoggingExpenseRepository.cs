@@ -16,6 +16,11 @@ class LoggingExpenseRepository : IExpenseRepository
         return null;
     }
 
+    public void Update(Expense expense)
+    {
+         Console.WriteLine("Logging repository: Update called.");
+    }
+
     public void Delete(Expense expense)
     {
         Console.WriteLine("Logging repository: Delete called.");

@@ -17,6 +17,18 @@ public class InMemoryExpenseRepository : IExpenseRepository
             expense => expense.Id == id
         );
     }
+
+    public void Update(Expense expense)
+{
+    int index = expenses.FindIndex(
+        existingExpense => existingExpense.Id == expense.Id
+    );
+
+    if (index != -1)
+    {
+        expenses[index] = expense;
+    }
+}
     public void Delete(Expense expense)
     {
         expenses.Remove(expense);

@@ -3,12 +3,25 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactApp", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddSingleton<IExpenseRepository, InMemoryExpenseRepository>();
 builder.Services.AddSingleton<ExpenseService>();
 
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.UseCors("ReactApp");
 
 if (app.Environment.IsDevelopment())
 {
@@ -32,6 +45,26 @@ app.MapPost("/api/expenses", (AddExpenseRequest request, ExpenseService expenseS
     );
 
     return Results.Ok();
+});
+
+app.MapPut("/api/expenses/{id:guid}", (
+    Guid id,
+    UpdateExpenseRequest request,
+    ExpenseService expenseService) =>
+{
+    bool updated = expenseService.UpdateExpense(
+        id,
+        request.Description,
+        request.Amount,
+        request.Category
+    );
+
+    if (!updated)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.NoContent();
 });
 
 app.MapDelete("/api/expenses/{id:guid}", (Guid id, ExpenseService expenseService) =>

@@ -1,4 +1,5 @@
 using System.Linq;
+
 public class ExpenseService
 {
     private readonly IExpenseRepository repository;
@@ -8,9 +9,17 @@ public class ExpenseService
         this.repository = repository;
     }
 
-    public void AddExpense(string description, decimal amount, string category)
+    public void AddExpense(
+        string description,
+        decimal amount,
+        string category)
     {
-        Expense expense = new Expense(description, amount, category);
+        Expense expense = new Expense(
+            description,
+            amount,
+            category
+        );
+
         repository.Add(expense);
     }
 
@@ -31,16 +40,40 @@ public class ExpenseService
         return total;
     }
 
-    public bool DeleteExpense(Guid id)
-{
-    Expense? expenseToDelete = repository.GetById(id);
-
-    if (expenseToDelete != null)
+    public bool UpdateExpense(
+        Guid id,
+        string description,
+        decimal amount,
+        string category)
     {
-        repository.Delete(expenseToDelete);
+        Expense? existingExpense = repository.GetById(id);
+
+        if (existingExpense == null)
+        {
+            return false;
+        }
+
+        existingExpense.Update(
+            description,
+            amount,
+            category
+        );
+
+        repository.Update(existingExpense);
+
         return true;
     }
 
-    return false;
-}
+    public bool DeleteExpense(Guid id)
+    {
+        Expense? expenseToDelete = repository.GetById(id);
+
+        if (expenseToDelete != null)
+        {
+            repository.Delete(expenseToDelete);
+            return true;
+        }
+
+        return false;
+    }
 }
